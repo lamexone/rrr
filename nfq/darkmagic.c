@@ -121,8 +121,8 @@ static void fill_tcphdr(
 		tcpopt[t] = 8; // kind
 		tcpopt[t+1] = 10; // len
 		// forge only TSecr if orig timestamp is present
-		*(uint32_t*)(tcpopt+t+2) = timestamps ? timestamps[0] : -1;
-		*(uint32_t*)(tcpopt+t+6) = (timestamps && !(fooling & FOOL_TS)) ? timestamps[1] : -1;
+		*(uint32_t*)(tcpopt+t+2) = timestamps ? timestamps[0] : 0xFFFFFFFF;
+		*(uint32_t*)(tcpopt+t+6) = (timestamps && !(fooling & FOOL_TS)) ? timestamps[1] : 0xFFFFFFFF;
 		t+=10;
 	}
 	if (scale_factor!=SCALE_NONE)
@@ -1321,7 +1321,6 @@ static bool logical_net_filter_match_rate_limited(void)
 static HANDLE windivert_init_filter(const char *filter, UINT64 flags)
 {
 	LPSTR errormessage = NULL;
-	DWORD errorcode = 0;
 	HANDLE h, hMutex;
 	const char *mutex_name = "Global\\winws_windivert_mutex";
 
@@ -1610,7 +1609,6 @@ static bool set_socket_fwmark(int sock, uint32_t fwmark)
 
 static int rawsend_socket(sa_family_t family)
 {
-	int yes=1;
 	int *sock = rawsend_family_sock(family);
 	if (!sock) return -1;
 	
